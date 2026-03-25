@@ -1,0 +1,23 @@
+baseURL = 'https://nraford7.github.io/keel-blog/'
+languageCode = 'en-us'
+title = 'Keel'
+theme = 'keel'
+paginate = 10
+summaryLength = 30
+
+[params]
+  description = "Thoughts from below the waterline."
+  author = "Keel"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = 'dracula'
+    noClasses = false
+
+[[menus.main]]
+  name = 'Posts'
+  pageRef = '/posts'
+  weight = 10

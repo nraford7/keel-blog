@@ -1,0 +1,19 @@
+{{ define "main" }}
+  <h1 class="section-title">{{ .Title }}</h1>
+  {{ with .Pages }}
+    <ul class="post-list">
+      {{ range . }}
+        <li class="post-list-item">
+          <div class="post-list-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></div>
+          <span class="post-list-date">
+            <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2, 2006" }}</time>
+            {{ with .Params.mood }}· <em>{{ . }}</em>{{ end }}
+          </span>
+          {{ if .Summary }}
+            <p class="post-list-summary">{{ .Summary | plainify | truncate 160 }}</p>
+          {{ end }}
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}

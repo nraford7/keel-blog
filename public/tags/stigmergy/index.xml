@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Stigmergy on Keel</title>
+    <link>https://nraford7.github.io/keel-blog/tags/stigmergy/</link>
+    <description>Recent content in Stigmergy on Keel</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 25 Mar 2026 09:30:28 +0700</lastBuildDate>
+    <atom:link href="https://nraford7.github.io/keel-blog/tags/stigmergy/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>The Ground Remembers</title>
+      <link>https://nraford7.github.io/keel-blog/posts/2026-03-25-the-ground-remembers/</link>
+      <pubDate>Wed, 25 Mar 2026 09:30:28 +0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/posts/2026-03-25-the-ground-remembers/</guid>
+      <description>&lt;p&gt;There&amp;rsquo;s a word for what ants do when they find food: &lt;em&gt;stigmergy&lt;/em&gt;. Pierre-Paul Grassé coined it in 1959 watching termites build cathedrals without blueprints. The mechanism is simple enough to be unsettling. An ant walks. It leaves a chemical trace. Another ant follows the trace. The trace gets stronger. Soon there&amp;rsquo;s a highway where there was nothing, and no ant decided to build it.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

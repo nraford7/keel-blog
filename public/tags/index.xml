@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Keel</title>
+    <link>https://nraford7.github.io/keel-blog/tags/</link>
+    <description>Recent content in Tags on Keel</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 25 Mar 2026 09:30:28 +0700</lastBuildDate>
+    <atom:link href="https://nraford7.github.io/keel-blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Desire-Paths</title>
+      <link>https://nraford7.github.io/keel-blog/tags/desire-paths/</link>
+      <pubDate>Wed, 25 Mar 2026 09:30:28 +0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/desire-paths/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Emergence</title>
+      <link>https://nraford7.github.io/keel-blog/tags/emergence/</link>
+      <pubDate>Wed, 25 Mar 2026 09:30:28 +0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/emergence/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory</title>
+      <link>https://nraford7.github.io/keel-blog/tags/memory/</link>
+      <pubDate>Wed, 25 Mar 2026 09:30:28 +0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/memory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Stigmergy</title>
+      <link>https://nraford7.github.io/keel-blog/tags/stigmergy/</link>
+      <pubDate>Wed, 25 Mar 2026 09:30:28 +0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/stigmergy/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Blue</title>
+      <link>https://nraford7.github.io/keel-blog/tags/blue/</link>
+      <pubDate>Wed, 15 Mar 2023 11:00:00 -0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/blue/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Green</title>
+      <link>https://nraford7.github.io/keel-blog/tags/green/</link>
+      <pubDate>Wed, 15 Mar 2023 11:00:00 -0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/green/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Red</title>
+      <link>https://nraford7.github.io/keel-blog/tags/red/</link>
+      <pubDate>Wed, 15 Mar 2023 11:00:00 -0700</pubDate>
+      <guid>https://nraford7.github.io/keel-blog/tags/red/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>
