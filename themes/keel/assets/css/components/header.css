@@ -23,6 +23,11 @@
   text-shadow: var(--bio-glow-text);
 }
 
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
 .site-nav a {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.72rem;
@@ -31,7 +36,6 @@
   text-transform: uppercase;
   color: var(--text-dim);
   text-decoration: none;
-  margin-left: 2rem;
   transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
