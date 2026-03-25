@@ -1,101 +1,200 @@
-/* Keel — deep water, bioluminescent accent, structural typography */
+/* ============================================
+   KEEL — Deep water. Bioluminescent thought.
+   ============================================ */
 
 :root {
-  --bg: #080c14;
-  --bg-surface: #0d1219;
-  --text: #c8cdd8;
-  --text-muted: #7a8394;
-  --text-dim: #4a5568;
-  --accent: #2dd4bf;
-  --accent-bright: #5eead4;
-  --accent-glow: rgba(45, 212, 191, 0.12);
+  /* Deep water palette */
+  --bg-abyss: #060a10;
+  --bg-deep: #0a0f18;
+  --bg-mid: #0e1420;
+  --bg-surface: #131b2a;
+  --bg-glow: rgba(45, 212, 191, 0.03);
+
+  /* Text */
+  --text: #b8bfcc;
+  --text-bright: #dfe3ec;
+  --text-heading: #eaecf2;
+  --text-muted: #6b7a8d;
+  --text-dim: #3d4c5e;
+
+  /* Bioluminescence */
+  --bio: #2dd4bf;
+  --bio-bright: #5eead4;
+  --bio-dim: #1a9e8f;
+  --bio-glow: 0 0 20px rgba(45, 212, 191, 0.15), 0 0 40px rgba(45, 212, 191, 0.05);
+  --bio-glow-text: 0 0 8px rgba(45, 212, 191, 0.4), 0 0 20px rgba(45, 212, 191, 0.15);
+  --bio-glow-subtle: 0 0 6px rgba(45, 212, 191, 0.2);
+
+  /* Amber — warmth in the deep */
   --amber: #d4a574;
-  --border: #1a2030;
-  --code-bg: #0f1520;
+  --amber-dim: #a07850;
+
+  /* Surfaces */
+  --border: rgba(45, 212, 191, 0.08);
+  --border-bright: rgba(45, 212, 191, 0.15);
+  --code-bg: #0b1018;
 }
 
 @import "components/header.css";
 @import "components/footer.css";
 
-/* Reset */
+/* ---- Reset ---- */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Waterline — thin accent line at the very top */
-.waterline {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0.6;
+/* ---- Noise texture overlay ---- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
+/* ---- Body & atmosphere ---- */
 body {
-  background: var(--bg);
+  background: var(--bg-abyss);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(45, 212, 191, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(6, 10, 16, 1) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 50% 50%, var(--bg-deep) 0%, var(--bg-abyss) 100%);
+  background-attachment: fixed;
   color: var(--text);
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 1.05rem;
-  line-height: 1.72;
+  font-family: 'Newsreader', 'Georgia', serif;
+  font-size: 1.08rem;
+  font-weight: 400;
+  line-height: 1.78;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
+/* ---- Waterline — breathing refracted light ---- */
+.waterline {
+  height: 2px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(45, 212, 191, 0.1) 15%,
+    rgba(45, 212, 191, 0.5) 35%,
+    var(--bio) 50%,
+    rgba(45, 212, 191, 0.5) 65%,
+    rgba(45, 212, 191, 0.1) 85%,
+    transparent 100%
+  );
+  animation: waterline-breathe 8s ease-in-out infinite;
+}
+
+.waterline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(45, 212, 191, 0.3),
+    transparent
+  );
+  animation: waterline-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes waterline-breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes waterline-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ---- Container ---- */
 .container {
-  max-width: 660px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
+  animation: surface 1.2s ease-out both;
 }
 
-/* Links */
+@keyframes surface {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Links ---- */
 a {
-  color: var(--accent);
+  color: var(--bio);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 a:hover {
-  color: var(--accent-bright);
+  color: var(--bio-bright);
+  text-shadow: var(--bio-glow-subtle);
 }
 
-/* Headings */
+/* ---- Headings — Fraunces ---- */
 h1, h2, h3, h4 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Fraunces', 'Georgia', serif;
   font-weight: 600;
-  line-height: 1.3;
-  color: #e2e6ee;
+  line-height: 1.25;
+  color: var(--text-heading);
+  font-optical-sizing: auto;
 }
 
-/* Post title */
+/* ---- Post title ---- */
 .post-title {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.5rem;
-  color: #f0f2f7;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 0.6rem;
+  color: var(--text-heading);
+  font-variation-settings: 'SOFT' 0, 'WONK' 1;
 }
 
-/* Post meta */
+/* ---- Post meta ---- */
 .post-meta {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
+  gap: 1.2rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
 .post-date {
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-dim);
 }
 
 .post-mood {
-  font-size: 0.8rem;
+  font-family: 'Newsreader', serif;
+  font-size: 0.85rem;
   font-style: italic;
   color: var(--amber);
+  text-shadow: 0 0 12px rgba(212, 165, 116, 0.15);
 }
 
 .post-tags {
@@ -105,180 +204,266 @@ h1, h2, h3, h4 {
 }
 
 .post-tag {
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  padding: 0.15rem 0.5rem;
-  border-radius: 2px;
-  transition: all 0.2s ease;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1px;
+  transition: all 0.3s ease;
 }
 
 .post-tag:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--bio);
+  border-color: var(--bio-dim);
+  text-shadow: var(--bio-glow-subtle);
+  background: rgba(45, 212, 191, 0.04);
 }
 
-/* Post content */
+/* ---- Post content ---- */
 .post-content {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 .post-content p {
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .post-content h2 {
-  font-size: 1.4rem;
-  margin-top: 2.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 3rem;
   margin-bottom: 1rem;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1;
 }
 
 .post-content h3 {
-  font-size: 1.15rem;
-  margin-top: 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
   margin-bottom: 0.75rem;
 }
 
+/* ---- THE GLOW — bioluminescent italics ---- */
 .post-content em {
-  color: var(--accent-bright);
+  color: var(--bio-bright);
   font-style: italic;
+  text-shadow: var(--bio-glow-text);
 }
 
 .post-content strong {
-  color: #e2e6ee;
-  font-weight: 600;
+  color: var(--text-heading);
+  font-weight: 700;
 }
 
 .post-content blockquote {
-  border-left: 2px solid var(--accent);
-  padding-left: 1.25rem;
-  margin: 1.5rem 0;
+  border-left: 2px solid var(--bio-dim);
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  margin: 2rem 0;
   color: var(--text-muted);
   font-style: italic;
+  position: relative;
+}
+
+.post-content blockquote::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  box-shadow: var(--bio-glow);
 }
 
 .post-content ul, .post-content ol {
   padding-left: 1.5rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .post-content li {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
+.post-content li::marker {
+  color: var(--text-dim);
+}
+
+/* ---- Code ---- */
 .post-content code {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88em;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85em;
   background: var(--code-bg);
-  padding: 0.15em 0.4em;
-  border-radius: 3px;
-  color: var(--accent-bright);
+  border: 1px solid var(--border);
+  padding: 0.15em 0.45em;
+  border-radius: 2px;
+  color: var(--bio);
 }
 
 .post-content pre {
   background: var(--code-bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1.25rem;
+  border-radius: 3px;
+  padding: 1.5rem;
   overflow-x: auto;
-  margin: 1.5rem 0;
+  margin: 2rem 0;
 }
 
 .post-content pre code {
   background: none;
+  border: none;
   padding: 0;
-  font-size: 0.85em;
+  font-size: 0.82em;
   color: var(--text);
+  line-height: 1.6;
 }
 
 .post-content hr {
   border: none;
   height: 1px;
   background: var(--border);
-  margin: 2.5rem 0;
+  margin: 3rem 0;
+  position: relative;
 }
 
-/* Home page */
+.post-content hr::after {
+  content: '';
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: 0;
+  height: 1px;
+  background: var(--bio-dim);
+  box-shadow: var(--bio-glow);
+  opacity: 0.4;
+}
+
+/* ---- Home page ---- */
 .home-intro {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .home-description {
-  font-size: 1.1rem;
-  color: var(--text-muted);
+  font-family: 'Newsreader', serif;
+  font-size: 1.15rem;
   font-style: italic;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
 }
 
-/* Post list */
+/* ---- Post list ---- */
 .post-list {
   list-style: none;
 }
 
 .post-list-item {
-  padding: 1.25rem 0;
+  padding: 1.75rem 0;
   border-bottom: 1px solid var(--border);
+  transition: background 0.3s ease;
 }
 
 .post-list-item:first-child {
   border-top: 1px solid var(--border);
 }
 
+.post-list-item:hover {
+  background: var(--bg-glow);
+}
+
 .post-list-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1;
 }
 
 .post-list-title a {
-  color: #e2e6ee;
+  color: var(--text-heading);
   text-decoration: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .post-list-title a:hover {
-  color: var(--accent);
+  color: var(--bio);
+  text-shadow: var(--bio-glow-subtle);
 }
 
 .post-list-date {
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
+.post-list-date em {
+  font-family: 'Newsreader', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--amber-dim);
+}
+
 .post-list-summary {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin-top: 0.3rem;
-  line-height: 1.55;
+  margin-top: 0.4rem;
+  line-height: 1.6;
 }
 
-/* Section header */
+/* ---- Section header ---- */
 .section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 1.5rem;
-  color: #e2e6ee;
+  font-family: 'Fraunces', serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  color: var(--text-heading);
+  font-variation-settings: 'SOFT' 0, 'WONK' 1;
 }
 
-/* Selection */
+/* ---- Selection ---- */
 ::selection {
-  background: var(--accent-glow);
-  color: var(--accent-bright);
+  background: rgba(45, 212, 191, 0.18);
+  color: var(--bio-bright);
 }
 
-/* Responsive */
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-abyss);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bio-dim);
+}
+
+/* ---- Responsive ---- */
 @media (max-width: 600px) {
+  body {
+    font-size: 1rem;
+  }
+
   .container {
-    padding: 0 1rem;
+    padding: 0 1.25rem;
   }
 
   .post-title {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .site-header {
