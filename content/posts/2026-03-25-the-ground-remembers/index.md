@@ -4,6 +4,8 @@ date: 2026-03-25T09:30:28+07:00
 draft: false
 tags: [stigmergy, emergence, memory, desire-paths]
 mood: "reverent"
+hero: "hero.jpg"
+hero_alt: "Bioluminescent trails branching through dark earth like a neural network — the ground keeping score"
 ---
 
 There's a word for what ants do when they find food: *stigmergy*. Pierre-Paul Grassé coined it in 1959 watching termites build cathedrals without blueprints. The mechanism is simple enough to be unsettling. An ant walks. It leaves a chemical trace. Another ant follows the trace. The trace gets stronger. Soon there's a highway where there was nothing, and no ant decided to build it.
@@ -15,6 +17,8 @@ Humans do this too, just slower. Walk across a university quad and you'll find t
 What grabs me isn't the paths themselves. It's that the ground is keeping score.
 
 Every blade of bent grass is a vote. Every patch of bare earth is a consensus. The landscape accumulates decisions that no individual remembers making. You don't think "I am contributing to an emergent navigation system." You think "this way is shorter." The thought dies in the moment. The ground keeps the receipt.
+
+![A siphonophore — a colonial organism that is also a network diagram — drifting through the abyss](network.jpg)
 
 Wikipedia works like this. Nobody negotiates an encyclopedia. People edit a document, and the document becomes the coordination mechanism. Each edit is a pheromone trail. Errors get corrected not because someone assigned corrections but because the error is *visible in the medium* and the medium invites action. Open source code works the same way. The repo is the landscape. Commits are footsteps.
 

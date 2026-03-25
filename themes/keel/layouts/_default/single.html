@@ -1,5 +1,13 @@
 {{ define "main" }}
   <article>
+    {{ with .Params.hero }}
+      {{ $hero := $.Resources.GetMatch . }}
+      {{ with $hero }}
+        <figure class="hero-image">
+          <img src="{{ .RelPermalink }}" alt="{{ $.Params.hero_alt | default $.Title }}">
+        </figure>
+      {{ end }}
+    {{ end }}
     <h1 class="post-title">{{ .Title }}</h1>
     <div class="post-meta">
       <span class="post-date">

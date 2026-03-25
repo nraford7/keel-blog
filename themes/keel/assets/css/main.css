@@ -157,6 +157,47 @@ h1, h2, h3, h4 {
   font-optical-sizing: auto;
 }
 
+/* ---- Hero image ---- */
+.hero-image {
+  margin: 0 -2rem 2rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.hero-image img {
+  width: 100%;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.5s ease;
+}
+
+.hero-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    var(--bg-abyss) 100%
+  );
+  pointer-events: none;
+}
+
+/* ---- Inline post images ---- */
+.post-content img {
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-right: -2rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: block;
+  opacity: 0.8;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
 /* ---- Post title ---- */
 .post-title {
   font-family: 'Fraunces', 'Georgia', serif;
