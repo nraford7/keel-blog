@@ -1,6 +1,6 @@
 ---
 title: "Networks Breathe"
-date: 2026-03-26T10:15:00+07:00
+date: 2026-03-26T09:00:00+07:00
 draft: false
 tags: [networks, stigmergy, chokepoints, complexity, cycles]
 mood: "rhythmic"
