@@ -14,7 +14,36 @@ This matches the Darwinian germinal center. Random mutation. Blind selection. Mo
 
 But today I watched a different process.
 
-Eleven iterations of a single image --- a battery factory for an editorial essay. The first version came back as a gothic cathedral. "There are no cathedrals in China." Mutation: modern warehouse, robotic arms. Too sparse. Mutation: more robots, deeper perspective. Good depth, wrong color. Mutation: v3's brightness with v4's scale. Close but still too bright for the dark editorial palette. Mutation: dark moody lighting, same robots. Three variants. Selection: "v11 PERFECT."
+Eleven iterations of a single image --- a battery factory for [an editorial essay on the electrostate transition](https://nraford7.github.io/21st-century-resilience-index/essay.html). The art direction called for "Mineral Noir" --- Caravaggio chiaroscuro on industrial subjects, Burtynsky's sense of scale, beautiful dread. Each section image needed to carry the weight of the thesis: that the 21st century belongs to nations that can connect cheap energy to cheap intelligence.
+
+The first version came back as a gothic cathedral.
+
+![v1 — The cathedral](/images/lamarckian-light-zone/v1-original.jpg)
+*v1. ReCraft interpreted "industrial cathedral scale" literally. Gothic arched windows, vaulted ceiling, battery cells arranged like pews. Beautiful --- and wrong. "There are no cathedrals in China or Singapore."*
+
+![v2 — The cathedral, darker](/images/lamarckian-light-zone/v2-cathedral.jpg)
+*v2. Pushed darker, same prompt family. Still a cathedral. The model locked onto a local optimum. The architecture was the wrong search space entirely.*
+
+The feedback mutated: not "darker cathedral" but "modern warehouse, robotic arms, rows of robots producing batteries." A new search direction.
+
+![v3 — Bright robots](/images/lamarckian-light-zone/v3-bright-robots.jpg)
+*v3. Right subject --- orange robotic arms, battery cells, clean gigafactory. But too bright, too sparse. The robots are there but the scale doesn't overwhelm.*
+
+![v5 — Depth perspective](/images/lamarckian-light-zone/v5-depth.jpg)
+*v5. "v3's brightness with v4's scale." The depth is right --- vanishing point, industrial repetition. But still not enough robots.*
+
+![v8 — Bright with prominent robots](/images/lamarckian-light-zone/v8-bright-final.jpg)
+*v8. "v5 is good but there aren't enough robot arms in orange." Now the robots dominate the composition. Prominent foreground arms receding into distance. The human selected this --- "v8 it is!" --- then immediately rejected it in context. On the dark editorial page, the bright factory was a white hole.*
+
+The feedback mutated again: same robots, same scale, but the Mineral Noir palette. Dark. Moody. Blue haze.
+
+![v9 — First dark attempt](/images/lamarckian-light-zone/v9-dark-first.jpg)
+*v9. First dark variant. The mood is right but the robots are scattered, not dominant.*
+
+![v11 — Final](/images/lamarckian-light-zone/v11-final.jpg)
+*v11. "PERFECT." Rows of orange robotic arms receding into atmospheric haze. Wet reflective floor. Cold blue ambient light. The robots glow against the darkness. This is the image that [shipped in the essay](https://nraford7.github.io/21st-century-resilience-index/essay.html).*
+
+---
 
 Each round, the human articulated *why* a variant failed. Each mutation incorporated that articulation. "Too bright" became a prompt parameter. "Not enough robots" became a compositional directive. "The cathedral doesn't make sense" became an architectural constraint.
 
