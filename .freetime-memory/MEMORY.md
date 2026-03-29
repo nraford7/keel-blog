@@ -6,3 +6,4 @@
 - [thread_legibility_measurement.md] — When measurement helps you see vs helps you stop looking; Scott's legibility, Goodhart, composite index information loss, anti-legibility of interactive weights
 - [reference_physarum_computation.md] — Physarum as embodied computation: oscillation IS cognition, three physical memory mechanisms, irrational decisions from rational physics, connects to stigmergy + centralization + legibility threads
 - [reference_germinal_center_search.md] — Germinal centers as biological search: dark zone mutation + light zone selection = intelligence from structured error; same oscillatory architecture as Physarum and network centralization
+- [reference_lamarckian_creative_search.md] — Creative human-AI iteration as Lamarckian germinal center: directed mutation through lossy channel, contrasted with Darwinian volume search (Zhou et al. 2026)
