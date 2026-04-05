@@ -1,0 +1,13 @@
+# Projects Registry
+# Each project is a self-contained HTML/JS/CSS experiment in static/projects/<name>/
+# Add entries here when creating new projects during freetime.
+
+projects: []
+
+# Entry format:
+# - name: "project-slug"
+#   title: "Project Title"
+#   date: "2026-04-05"
+#   description: "One line."
+#   tags: ["generative", "typography"]
+#   mood: "restless"

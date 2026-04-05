@@ -157,45 +157,98 @@ h1, h2, h3, h4 {
   font-optical-sizing: auto;
 }
 
-/* ---- Hero image ---- */
+/* ============================================
+   HERO IMAGE — full vignette, emerging from the dark
+   ============================================ */
 .hero-image {
-  margin: 0 -2rem 2rem;
+  margin: 0 -2rem 2.5rem;
   position: relative;
   overflow: hidden;
-  border-radius: 2px;
 }
 
 .hero-image img {
   width: 100%;
   display: block;
-  opacity: 0.85;
+  opacity: 0.8;
   transition: opacity 0.5s ease;
 }
 
+/* Top + side vignette */
+.hero-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, var(--bg-abyss), transparent 35%),
+    linear-gradient(to right, var(--bg-abyss), transparent 12%),
+    linear-gradient(to left, var(--bg-abyss), transparent 12%);
+}
+
+/* Bottom vignette — heavier fade into content */
 .hero-image::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 50%,
-    var(--bg-abyss) 100%
-  );
+  z-index: 1;
   pointer-events: none;
+  background:
+    linear-gradient(to top, var(--bg-abyss) 0%, transparent 45%),
+    radial-gradient(ellipse 120% 80% at 50% 50%, transparent 40%, rgba(6, 10, 16, 0.6) 100%);
 }
 
-/* ---- Inline post images ---- */
+/* ============================================
+   INLINE POST IMAGES — vignette treatment
+   ============================================ */
 .post-content img {
   width: calc(100% + 4rem);
   margin-left: -2rem;
   margin-right: -2rem;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
   display: block;
   opacity: 0.8;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
   position: relative;
+}
+
+/* Wrapper for inline images — applied via JS */
+.image-vignette {
+  position: relative;
+  overflow: hidden;
+  margin-left: -2rem;
+  margin-right: -2rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.image-vignette img {
+  width: 100%;
+  margin: 0;
+  display: block;
+  opacity: 0.8;
+}
+
+.image-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, var(--bg-abyss), transparent 25%),
+    linear-gradient(to right, var(--bg-abyss), transparent 10%),
+    linear-gradient(to left, var(--bg-abyss), transparent 10%);
+}
+
+.image-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, var(--bg-abyss) 0%, transparent 35%);
 }
 
 /* ---- Post title ---- */
@@ -435,7 +488,9 @@ h1, h2, h3, h4 {
   opacity: 0.4;
 }
 
-/* ---- Home page ---- */
+/* ============================================
+   HOME PAGE
+   ============================================ */
 .home-intro {
   margin-bottom: 3rem;
   padding: 3rem 0;
@@ -465,7 +520,11 @@ h1, h2, h3, h4 {
   opacity: 0.5;
 }
 
-/* ---- Featured post (first item gets editorial treatment) ---- */
+/* ============================================
+   POST LIST — editorial treatment
+   ============================================ */
+
+/* ---- Featured post (first item) ---- */
 .post-list-item:first-child {
   border-top: none;
   padding: 2.5rem 0;
@@ -493,7 +552,7 @@ h1, h2, h3, h4 {
 .post-list-item {
   padding: 1.75rem 0;
   border-bottom: 1px solid var(--border);
-  transition: background 0.3s ease;
+  transition: background 0.4s ease, padding-left 0.4s ease;
 }
 
 .post-list-item:first-child {
@@ -502,6 +561,7 @@ h1, h2, h3, h4 {
 
 .post-list-item:hover {
   background: var(--bg-glow);
+  padding-left: 0.5rem;
 }
 
 .post-list-title {
@@ -689,7 +749,9 @@ h1, h2, h3, h4 {
   background: var(--bg-glow);
 }
 
-/* ---- Responsive ---- */
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 600px) {
   body {
     font-size: 1rem;
@@ -724,10 +786,23 @@ h1, h2, h3, h4 {
     text-align: left;
   }
 
-  .site-header {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0;
+  .hero-image {
+    margin: 0 -1.25rem 2rem;
+  }
+
+  .image-vignette {
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+  }
+
+  .post-content img {
+    width: calc(100% + 2.5rem);
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+  }
+
+  .post-list-item:hover {
+    padding-left: 0;
   }
 }
 
@@ -749,4 +824,108 @@ h1, h2, h3, h4 {
   #marine-snow {
     display: none;
   }
+}
+
+/* ============================================
+   PROJECTS
+   ============================================ */
+.projects-intro {
+  margin-bottom: 3rem;
+  padding: 3rem 0 2rem;
+}
+
+.projects-description {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  margin-top: 0.5rem;
+}
+
+.project-list {
+  list-style: none;
+}
+
+.project-list-item {
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.4s ease, padding-left 0.4s ease;
+}
+
+.project-list-item:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.project-list-item:hover {
+  background: var(--bg-glow);
+  padding-left: 0.5rem;
+}
+
+.project-list-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  font-variation-settings: 'SOFT' 0, 'WONK' 1;
+}
+
+.project-list-title a {
+  color: var(--text-heading);
+  text-decoration: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.project-list-title a:hover {
+  color: var(--bio);
+  text-shadow: var(--bio-glow-subtle);
+}
+
+.project-list-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.project-list-date em {
+  font-family: 'Newsreader', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--amber-dim);
+}
+
+.project-list-description {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  line-height: 1.6;
+}
+
+.project-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.project-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+  border-radius: 1px;
+}
+
+.projects-empty {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  color: var(--text-dim);
+  margin-top: 2rem;
 }
