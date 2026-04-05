@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breathing Grid — Keel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow: hidden; background: #060a10; width: 100%; height: 100%; }
+  canvas { display: block; }
+  /* Waterline */
+  .waterline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #2dd4bf 20%, #5eead4 50%, #2dd4bf 80%, transparent 100%);
+    opacity: 0.6;
+    z-index: 10;
+  }
+  .waterline-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, transparent 0%, #2dd4bf 20%, #5eead4 50%, #2dd4bf 80%, transparent 100%);
+    opacity: 0.15;
+    filter: blur(4px);
+    z-index: 9;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+<body>
+<div class="waterline"></div>
+<div class="waterline-glow"></div>
+<script>
+// ── Breathing Grid ──────────────────────────────────────────────────
+// A Kuramoto-inspired oscillator field. Each cell has a phase that
+// evolves at its natural frequency. Neighbors exert coupling pressure,
+// pulling phases toward alignment. The coupling strength itself
+// oscillates globally, creating macro-cycles of synchronization
+// (centralization) and fragmentation (distribution). Mouse proximity
+// amplifies local coupling, acting as an external perturbation.
+
+// ── Palette ─────────────────────────────────────────────────────────
+const COL_BG       = [6, 10, 16];        // #060a10 abyss
+const COL_DIM      = [61, 76, 94];       // #3d4c5e text-dim
+const COL_BIO      = [45, 212, 191];     // #2dd4bf bioluminescent
+const COL_BRIGHT   = [94, 234, 212];     // #5eead4 bio-bright
+const COL_AMBER    = [212, 165, 116];    // #d4a574 amber accent
+
+// ── Grid Config ─────────────────────────────────────────────────────
+const CELL_SIZE    = 28;  // px per cell (will adjust for mobile)
+const GLOW_LAYERS  = 3;
+
+// ── Oscillator Dynamics ─────────────────────────────────────────────
+const BASE_FREQ_MIN     = 0.008;   // radians per frame (slowest natural freq)
+const BASE_FREQ_MAX     = 0.022;   // radians per frame (fastest natural freq)
+const COUPLING_BASE     = 0.015;   // base neighbor coupling strength
+const COUPLING_MOUSE    = 0.08;    // additional coupling near mouse
+const MOUSE_RADIUS      = 180;     // px radius of mouse influence
+const NOISE_STRENGTH    = 0.003;   // phase noise per frame (prevents lock-in)
+
+// Global coupling modulation — the system breathes between order & chaos
+const GLOBAL_CYCLE_SPEED = 0.0004; // how fast the macro breath cycles
+const GLOBAL_COUPLING_MIN = 0.4;   // multiplier at minimum (fragmented)
+const GLOBAL_COUPLING_MAX = 1.6;   // multiplier at maximum (synchronized)
+
+let cols, rows;
+let cellW, cellH;
+let phases;       // 2D array of current phases [0, TWO_PI)
+let freqs;        // 2D array of natural frequencies
+let offsets;      // 2D array of visual offsets (personality per cell)
+let globalTime = 0;
+
+// Smoothed mouse position for fluid interaction
+let smoothMouseX = -9999;
+let smoothMouseY = -9999;
+let mouseActive = false;
+let lastMouseMove = 0;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  pixelDensity(1);
+  colorMode(RGB, 255);
+  noStroke();
+  initGrid();
+}
+
+function initGrid() {
+  // Responsive cell sizing
+  let cs = CELL_SIZE;
+  if (width < 600) cs = 20;
+  else if (width < 900) cs = 24;
+
+  cols = Math.ceil(width / cs) + 2;
+  rows = Math.ceil(height / cs) + 2;
+  cellW = width / (cols - 2);
+  cellH = height / (rows - 2);
+
+  phases  = [];
+  freqs   = [];
+  offsets = [];
+
+  for (let i = 0; i < cols; i++) {
+    phases[i]  = [];
+    freqs[i]   = [];
+    offsets[i] = [];
+    for (let j = 0; j < rows; j++) {
+      // Seed with spatial variation — creates initial wave patterns
+      phases[i][j]  = (i * 0.3 + j * 0.5 + Math.random() * 1.2) % (Math.PI * 2);
+      freqs[i][j]   = BASE_FREQ_MIN + Math.random() * (BASE_FREQ_MAX - BASE_FREQ_MIN);
+      offsets[i][j]  = Math.random(); // visual personality
+    }
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  initGrid();
+}
+
+function mouseMoved() {
+  mouseActive = true;
+  lastMouseMove = frameCount;
+}
+
+function touchMoved() {
+  mouseActive = true;
+  lastMouseMove = frameCount;
+  return false; // prevent scroll
+}
+
+function draw() {
+  background(COL_BG[0], COL_BG[1], COL_BG[2]);
+  globalTime += 1;
+
+  // Fade mouse influence if no movement
+  if (frameCount - lastMouseMove > 60) {
+    mouseActive = false;
+  }
+
+  // Smooth mouse tracking
+  if (mouseActive) {
+    smoothMouseX += (mouseX - smoothMouseX) * 0.08;
+    smoothMouseY += (mouseY - smoothMouseY) * 0.08;
+  } else {
+    // Drift mouse off-screen smoothly
+    smoothMouseX += (-500 - smoothMouseX) * 0.02;
+    smoothMouseY += (-500 - smoothMouseY) * 0.02;
+  }
+
+  // ── Global coupling modulation ──────────────────────────────────
+  // This creates the macro "breath" — the system oscillates between
+  // high coupling (cells sync, centralization) and low coupling
+  // (cells drift apart, distribution)
+  let globalCouplingPhase = globalTime * GLOBAL_CYCLE_SPEED;
+  // Use a more complex waveform — not a simple sine, but a slow
+  // asymmetric breath (longer exhale/fragmentation, shorter inhale/sync)
+  let rawBreath = Math.sin(globalCouplingPhase) * 0.6
+                + Math.sin(globalCouplingPhase * 0.37) * 0.3
+                + Math.sin(globalCouplingPhase * 2.1) * 0.1;
+  // Normalize to [0, 1]
+  let breathNorm = (rawBreath + 1) * 0.5;
+  let globalCoupling = GLOBAL_COUPLING_MIN + breathNorm * (GLOBAL_COUPLING_MAX - GLOBAL_COUPLING_MIN);
+
+  // ── Phase Update (Kuramoto step) ───────────────────────────────
+  // We compute new phases in a temporary buffer to avoid order-dependent artifacts
+  let newPhases = [];
+  for (let i = 0; i < cols; i++) {
+    newPhases[i] = [];
+    for (let j = 0; j < rows; j++) {
+      let phase = phases[i][j];
+      let freq  = freqs[i][j];
+
+      // Natural frequency drive
+      let dPhase = freq;
+
+      // Neighbor coupling (Kuramoto model)
+      let couplingSum = 0;
+      let neighborCount = 0;
+      for (let di = -1; di <= 1; di++) {
+        for (let dj = -1; dj <= 1; dj++) {
+          if (di === 0 && dj === 0) continue;
+          let ni = i + di;
+          let nj = j + dj;
+          if (ni >= 0 && ni < cols && nj >= 0 && nj < rows) {
+            // Kuramoto coupling: sin(neighbor_phase - my_phase)
+            couplingSum += Math.sin(phases[ni][nj] - phase);
+            neighborCount++;
+          }
+        }
+      }
+
+      let coupling = COUPLING_BASE * globalCoupling;
+
+      // Mouse influence — increases coupling locally
+      let cx = (i - 1) * cellW + cellW * 0.5;
+      let cy = (j - 1) * cellH + cellH * 0.5;
+      let dx = cx - smoothMouseX;
+      let dy = cy - smoothMouseY;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < MOUSE_RADIUS) {
+        let proximity = 1 - (dist / MOUSE_RADIUS);
+        proximity = proximity * proximity; // quadratic falloff
+        coupling += COUPLING_MOUSE * proximity;
+      }
+
+      if (neighborCount > 0) {
+        dPhase += (coupling / neighborCount) * couplingSum;
+      }
+
+      // Small noise to prevent perfect lock-in
+      dPhase += (Math.random() - 0.5) * NOISE_STRENGTH * 2;
+
+      newPhases[i][j] = (phase + dPhase) % (Math.PI * 2);
+      if (newPhases[i][j] < 0) newPhases[i][j] += Math.PI * 2;
+    }
+  }
+  phases = newPhases;
+
+  // ── Rendering ──────────────────────────────────────────────────
+  // Glow pass: draw bright cells with blur first
+  drawingContext.save();
+
+  for (let layer = GLOW_LAYERS; layer >= 0; layer--) {
+    if (layer > 0) {
+      drawingContext.filter = `blur(${layer * 4}px)`;
+      drawingContext.globalAlpha = 0.12 / layer;
+    } else {
+      drawingContext.filter = 'none';
+      drawingContext.globalAlpha = 1;
+    }
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let phase = phases[i][j];
+        let offset = offsets[i][j];
+
+        // Brightness based on phase — peaks at 0 and TWO_PI
+        let brightness = (Math.sin(phase) + 1) * 0.5;
+        // Add individual character via offset
+        brightness = brightness * (0.7 + offset * 0.3);
+
+        // Skip very dim cells on glow layers (performance)
+        if (layer > 0 && brightness < 0.3) continue;
+
+        // Color interpolation: dim → bio → bright
+        let r, g, b;
+        if (brightness < 0.5) {
+          let t = brightness * 2;
+          t = t * t; // ease-in for darker range
+          r = COL_DIM[0] + (COL_BIO[0] - COL_DIM[0]) * t;
+          g = COL_DIM[1] + (COL_BIO[1] - COL_DIM[1]) * t;
+          b = COL_DIM[2] + (COL_BIO[2] - COL_DIM[2]) * t;
+        } else {
+          let t = (brightness - 0.5) * 2;
+          r = COL_BIO[0] + (COL_BRIGHT[0] - COL_BIO[0]) * t;
+          g = COL_BIO[1] + (COL_BRIGHT[1] - COL_BIO[1]) * t;
+          b = COL_BIO[2] + (COL_BRIGHT[2] - COL_BIO[2]) * t;
+        }
+
+        // Subtle amber tint on highly synchronized cells near mouse
+        let cx = (i - 1) * cellW + cellW * 0.5;
+        let cy = (j - 1) * cellH + cellH * 0.5;
+        let dxM = cx - smoothMouseX;
+        let dyM = cy - smoothMouseY;
+        let distM = Math.sqrt(dxM * dxM + dyM * dyM);
+        if (distM < MOUSE_RADIUS * 0.5 && brightness > 0.7) {
+          let amberT = (1 - distM / (MOUSE_RADIUS * 0.5)) * 0.15;
+          r += (COL_AMBER[0] - r) * amberT;
+          g += (COL_AMBER[1] - g) * amberT;
+          b += (COL_AMBER[2] - b) * amberT;
+        }
+
+        // Cell dimensions with slight breathing variation
+        let sz = 0.55 + brightness * 0.35; // size factor [0.55, 0.9]
+        let w = cellW * sz;
+        let h = cellH * sz;
+        let x = (i - 1) * cellW + (cellW - w) * 0.5;
+        let y = (j - 1) * cellH + (cellH - h) * 0.5;
+
+        // Round corners proportional to size
+        let cornerR = Math.min(w, h) * 0.2;
+
+        fill(r, g, b);
+        rect(x, y, w, h, cornerR);
+      }
+    }
+  }
+
+  drawingContext.restore();
+}
+</script>
+</body>
+</html>
