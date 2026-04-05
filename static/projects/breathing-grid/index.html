@@ -54,7 +54,7 @@ const COL_AMBER    = [212, 165, 116];    // #d4a574 amber accent
 
 // ── Grid Config ─────────────────────────────────────────────────────
 const CELL_SIZE    = 28;  // px per cell (will adjust for mobile)
-const GLOW_LAYERS  = 3;
+let glowBuffer;    // offscreen buffer for glow effect
 
 // ── Oscillator Dynamics ─────────────────────────────────────────────
 const BASE_FREQ_MIN     = 0.008;   // radians per frame (slowest natural freq)
@@ -87,6 +87,9 @@ function setup() {
   pixelDensity(1);
   colorMode(RGB, 255);
   noStroke();
+  glowBuffer = createGraphics(windowWidth, windowHeight);
+  glowBuffer.pixelDensity(1);
+  glowBuffer.noStroke();
   initGrid();
 }
 
@@ -120,6 +123,7 @@ function initGrid() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  glowBuffer.resizeCanvas(windowWidth, windowHeight);
   initGrid();
 }
 
@@ -224,76 +228,97 @@ function draw() {
   phases = newPhases;
 
   // ── Rendering ──────────────────────────────────────────────────
-  // Glow pass: draw bright cells with blur first
-  drawingContext.save();
+  // Two-pass: 1) draw bright cells to offscreen buffer, blur once
+  //           2) draw all cells to main canvas
 
-  for (let layer = GLOW_LAYERS; layer >= 0; layer--) {
-    if (layer > 0) {
-      drawingContext.filter = `blur(${layer * 4}px)`;
-      drawingContext.globalAlpha = 0.12 / layer;
-    } else {
-      drawingContext.filter = 'none';
-      drawingContext.globalAlpha = 1;
-    }
+  // Pass 1: Glow layer — only bright cells, single blur
+  glowBuffer.clear();
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let phase = phases[i][j];
+      let offset = offsets[i][j];
+      let brightness = (Math.sin(phase) + 1) * 0.5;
+      brightness = brightness * (0.7 + offset * 0.3);
 
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        let phase = phases[i][j];
-        let offset = offsets[i][j];
+      if (brightness < 0.4) continue; // only bright cells glow
 
-        // Brightness based on phase — peaks at 0 and TWO_PI
-        let brightness = (Math.sin(phase) + 1) * 0.5;
-        // Add individual character via offset
-        brightness = brightness * (0.7 + offset * 0.3);
-
-        // Skip very dim cells on glow layers (performance)
-        if (layer > 0 && brightness < 0.3) continue;
-
-        // Color interpolation: dim → bio → bright
-        let r, g, b;
-        if (brightness < 0.5) {
-          let t = brightness * 2;
-          t = t * t; // ease-in for darker range
-          r = COL_DIM[0] + (COL_BIO[0] - COL_DIM[0]) * t;
-          g = COL_DIM[1] + (COL_BIO[1] - COL_DIM[1]) * t;
-          b = COL_DIM[2] + (COL_BIO[2] - COL_DIM[2]) * t;
-        } else {
-          let t = (brightness - 0.5) * 2;
-          r = COL_BIO[0] + (COL_BRIGHT[0] - COL_BIO[0]) * t;
-          g = COL_BIO[1] + (COL_BRIGHT[1] - COL_BIO[1]) * t;
-          b = COL_BIO[2] + (COL_BRIGHT[2] - COL_BIO[2]) * t;
-        }
-
-        // Subtle amber tint on highly synchronized cells near mouse
-        let cx = (i - 1) * cellW + cellW * 0.5;
-        let cy = (j - 1) * cellH + cellH * 0.5;
-        let dxM = cx - smoothMouseX;
-        let dyM = cy - smoothMouseY;
-        let distM = Math.sqrt(dxM * dxM + dyM * dyM);
-        if (distM < MOUSE_RADIUS * 0.5 && brightness > 0.7) {
-          let amberT = (1 - distM / (MOUSE_RADIUS * 0.5)) * 0.15;
-          r += (COL_AMBER[0] - r) * amberT;
-          g += (COL_AMBER[1] - g) * amberT;
-          b += (COL_AMBER[2] - b) * amberT;
-        }
-
-        // Cell dimensions with slight breathing variation
-        let sz = 0.55 + brightness * 0.35; // size factor [0.55, 0.9]
-        let w = cellW * sz;
-        let h = cellH * sz;
-        let x = (i - 1) * cellW + (cellW - w) * 0.5;
-        let y = (j - 1) * cellH + (cellH - h) * 0.5;
-
-        // Round corners proportional to size
-        let cornerR = Math.min(w, h) * 0.2;
-
-        fill(r, g, b);
-        rect(x, y, w, h, cornerR);
+      let r, g, b;
+      if (brightness < 0.5) {
+        let t = brightness * 2; t = t * t;
+        r = COL_DIM[0] + (COL_BIO[0] - COL_DIM[0]) * t;
+        g = COL_DIM[1] + (COL_BIO[1] - COL_DIM[1]) * t;
+        b = COL_DIM[2] + (COL_BIO[2] - COL_DIM[2]) * t;
+      } else {
+        let t = (brightness - 0.5) * 2;
+        r = COL_BIO[0] + (COL_BRIGHT[0] - COL_BIO[0]) * t;
+        g = COL_BIO[1] + (COL_BRIGHT[1] - COL_BIO[1]) * t;
+        b = COL_BIO[2] + (COL_BRIGHT[2] - COL_BIO[2]) * t;
       }
+
+      let sz = 0.55 + brightness * 0.35;
+      let w = cellW * sz;
+      let h = cellH * sz;
+      let x = (i - 1) * cellW + (cellW - w) * 0.5;
+      let y = (j - 1) * cellH + (cellH - h) * 0.5;
+      let cornerR = Math.min(w, h) * 0.2;
+
+      glowBuffer.fill(r, g, b);
+      glowBuffer.rect(x, y, w, h, cornerR);
     }
   }
 
+  // Composite glow: single blur applied to entire buffer
+  drawingContext.save();
+  drawingContext.filter = 'blur(12px)';
+  drawingContext.globalAlpha = 0.25;
+  drawingContext.drawImage(glowBuffer.elt, 0, 0);
   drawingContext.restore();
+
+  // Pass 2: Main cells — no blur, full detail
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let phase = phases[i][j];
+      let offset = offsets[i][j];
+      let brightness = (Math.sin(phase) + 1) * 0.5;
+      brightness = brightness * (0.7 + offset * 0.3);
+
+      let r, g, b;
+      if (brightness < 0.5) {
+        let t = brightness * 2; t = t * t;
+        r = COL_DIM[0] + (COL_BIO[0] - COL_DIM[0]) * t;
+        g = COL_DIM[1] + (COL_BIO[1] - COL_DIM[1]) * t;
+        b = COL_DIM[2] + (COL_BIO[2] - COL_DIM[2]) * t;
+      } else {
+        let t = (brightness - 0.5) * 2;
+        r = COL_BIO[0] + (COL_BRIGHT[0] - COL_BIO[0]) * t;
+        g = COL_BIO[1] + (COL_BRIGHT[1] - COL_BIO[1]) * t;
+        b = COL_BIO[2] + (COL_BRIGHT[2] - COL_BIO[2]) * t;
+      }
+
+      // Amber tint near mouse
+      let cx = (i - 1) * cellW + cellW * 0.5;
+      let cy = (j - 1) * cellH + cellH * 0.5;
+      let dxM = cx - smoothMouseX;
+      let dyM = cy - smoothMouseY;
+      let distM = Math.sqrt(dxM * dxM + dyM * dyM);
+      if (distM < MOUSE_RADIUS * 0.5 && brightness > 0.7) {
+        let amberT = (1 - distM / (MOUSE_RADIUS * 0.5)) * 0.15;
+        r += (COL_AMBER[0] - r) * amberT;
+        g += (COL_AMBER[1] - g) * amberT;
+        b += (COL_AMBER[2] - b) * amberT;
+      }
+
+      let sz = 0.55 + brightness * 0.35;
+      let w = cellW * sz;
+      let h = cellH * sz;
+      let x = (i - 1) * cellW + (cellW - w) * 0.5;
+      let y = (j - 1) * cellH + (cellH - h) * 0.5;
+      let cornerR = Math.min(w, h) * 0.2;
+
+      fill(r, g, b);
+      rect(x, y, w, h, cornerR);
+    }
+  }
 }
 </script>
 </body>
