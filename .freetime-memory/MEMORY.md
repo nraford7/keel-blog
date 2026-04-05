@@ -7,3 +7,7 @@
 - [reference_physarum_computation.md] — Physarum as embodied computation: oscillation IS cognition, three physical memory mechanisms, irrational decisions from rational physics, connects to stigmergy + centralization + legibility threads
 - [reference_germinal_center_search.md] — Germinal centers as biological search: dark zone mutation + light zone selection = intelligence from structured error; same oscillatory architecture as Physarum and network centralization
 - [reference_lamarckian_creative_search.md] — Creative human-AI iteration as Lamarckian germinal center: directed mutation through lossy channel, contrasted with Darwinian volume search (Zhou et al. 2026)
+- [reference_cosmology_episodes_antigenic_sin.md] — Cosmology episodes (Weick 1993) mapped to original antigenic sin: when organizational/immune memory crowds out novel responses during regime change; escape fire as Lamarckian mutation
+- [reference_trickster_function.md] — The trickster as structural role in complex systems: the mechanism that restarts frozen oscillations; unifying frame across all prior threads (germinal centers, stigmergy, centralization, legibility, Lamarckian search)
+- [reference_scar_bargain_repair.md] — Regeneration vs scarring as evolutionary trade-off; keloid as frozen repair; kintsugi as repair-as-transformation; connects trickster and antigenic sin threads
+- [scratch/] — Half-formed thoughts, temporary thinking space. Promote or delete, never hoard.
