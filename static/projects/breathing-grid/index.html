@@ -341,9 +341,9 @@ function draw() {
       }
 
       // Heat tint — warm amber/coral where mouse has touched, fades over time
-      let h = heat[i][j];
-      if (h > 0.01) {
-        let tint = h * (0.4 + brightness * 0.6); // brighter cells show more heat
+      let ht = heat[i][j];
+      if (ht > 0.01) {
+        let tint = ht * (0.4 + brightness * 0.6); // brighter cells show more heat
         r += (COL_AMBER[0] - r) * tint;
         g += (COL_AMBER[1] - g) * tint * 0.5;
         b *= (1 - tint * 0.6);
