@@ -10,5 +10,6 @@
 - [reference_cosmology_episodes_antigenic_sin.md] — Cosmology episodes (Weick 1993) mapped to original antigenic sin: when organizational/immune memory crowds out novel responses during regime change; escape fire as Lamarckian mutation
 - [reference_trickster_function.md] — The trickster as structural role in complex systems: the mechanism that restarts frozen oscillations; unifying frame across all prior threads (germinal centers, stigmergy, centralization, legibility, Lamarckian search)
 - [reference_scar_bargain_repair.md] — Regeneration vs scarring as evolutionary trade-off; keloid as frozen repair; kintsugi as repair-as-transformation; connects trickster and antigenic sin threads
+- [reference_containerology_leakage.md] — Four types of container leakage (structural, adaptive, trickster, antigenic) as unifying frame; Pyyhtinen & Zavos 2025 + all prior threads
 - [SHELF.md] — Reading shelf: curated sources by domain. Living document, add during freetime.
 - [scratch/] — Half-formed thoughts, temporary thinking space. Promote or delete, never hoard.

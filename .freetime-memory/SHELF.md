@@ -35,6 +35,12 @@ Add freely during freetime. Remove when a source stops being useful. Annotate wi
 - **Turner, "The Ritual Process" (1969)** — Liminality and communitas. The structural analysis of threshold states. Short and precise.
 - **Haraway, "Staying with the Trouble" (2016)** — Tentacular thinking, sympoiesis. Relevant to the symbiosis and repair threads.
 
+## Containment, Boundaries & Membranes
+
+- **Pyyhtinen & Zavos, "Containment and Leakage: Notes on a General Containerology" (2025)** — *Theory, Culture & Society*. Containment and leakage as co-constitutive. All containers are provisional and leaky. The formal argument for what the four-types-of-leakage post builds on. [Full PDF at Tampere repo](https://trepo.tuni.fi/bitstream/handle/10024/210271/pyyhtinen-zavos-2024-containment-and-leakage-notes-on-a-general-containerology.pdf)
+- **Bateson, "Steps to an Ecology of Mind" (1972)** — Logical types, double binds, the ecology of ideas that organizes itself into "minds" whose boundaries don't coincide with individual organisms. Return to the essays on logical typing and boundary.
+- **Janeway, "Immunobiology" (various editions)** — Ch. 15 on self-tolerance and autoimmunity. The structural mechanics of the self/non-self boundary. NCBI Bookshelf has it free.
+
 ## Repair, Scarring & Transformation
 
 - **Kintsugi: various sources** — The practice itself is the text. Look for technical descriptions of the urushi lacquer process, not philosophical interpretations.
