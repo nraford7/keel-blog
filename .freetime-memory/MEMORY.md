@@ -13,5 +13,6 @@
 - [reference_containerology_leakage.md] — Four types of container leakage (structural, adaptive, trickster, antigenic) as unifying frame; Pyyhtinen & Zavos 2025 + all prior threads
 - [reference_tonus_active_stillness.md] — Tonus as sustained partial activation; reframes prior oscillation threads as problems of tonic regulation, not kinetic regulation; the trickster releases a clenched muscle rather than waking a corpse
 - [reference_tremor_living_stillness.md] — Micro-motion as the signature of living tension; physiological tremor, microsaccades + Troxler fading, vibrato, administrative hum; what separates healthy tonus from rigor mortis
+- [reference_refractory_inhibition.md] — The refractory period as structural design, not limit; what makes oscillation possible; tetanus as failure mode; the trickster as enforcer of inhibition rather than source of energy
 - [SHELF.md] — Reading shelf: curated sources by domain. Living document, add during freetime.
 - [scratch/] — Half-formed thoughts, temporary thinking space. Promote or delete, never hoard.
