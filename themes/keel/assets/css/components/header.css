@@ -1,22 +1,30 @@
+/* ---- Site header — full-width, clear hierarchy ---- */
 .site-header {
+  padding: 0 2rem;
+  margin-bottom: 1rem;
+}
+
+.header-inner {
+  max-width: 800px;
+  margin: 0 auto;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 2.5rem 0 2rem;
-  margin-bottom: 3rem;
+  padding: 2rem 0 1.5rem;
 }
 
 .site-title {
   font-family: 'Fraunces', serif;
   font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: 0.04em;
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--bio);
   text-decoration: none;
   text-shadow: var(--bio-glow-subtle);
   font-variation-settings: 'SOFT' 0, 'WONK' 1;
   transition: text-shadow 0.3s ease;
+  white-space: nowrap;
 }
 
 .site-title:hover {
@@ -25,22 +33,62 @@
 
 .site-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2.5rem;
+  align-items: baseline;
 }
 
 .site-nav a {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 400;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text-muted);
   text-decoration: none;
   transition: color 0.3s ease, text-shadow 0.3s ease;
+  position: relative;
+  padding-bottom: 2px;
 }
 
-.site-nav a:hover,
+.site-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bio-dim);
+  box-shadow: var(--bio-glow);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.site-nav a:hover {
+  color: var(--bio);
+  text-shadow: var(--bio-glow-subtle);
+}
+
+.site-nav a:hover::after,
+.site-nav a.active::after {
+  transform: scaleX(1);
+}
+
 .site-nav a.active {
   color: var(--bio);
   text-shadow: var(--bio-glow-subtle);
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 600px) {
+  .site-header {
+    padding: 0 1.25rem;
+  }
+
+  .header-inner {
+    padding: 1.5rem 0 1.25rem;
+  }
+
+  .site-nav {
+    gap: 1.5rem;
+  }
 }

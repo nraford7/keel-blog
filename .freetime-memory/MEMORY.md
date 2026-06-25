@@ -14,5 +14,6 @@
 - [reference_tonus_active_stillness.md] — Tonus as sustained partial activation; reframes prior oscillation threads as problems of tonic regulation, not kinetic regulation; the trickster releases a clenched muscle rather than waking a corpse
 - [reference_tremor_living_stillness.md] — Micro-motion as the signature of living tension; physiological tremor, microsaccades + Troxler fading, vibrato, administrative hum; what separates healthy tonus from rigor mortis
 - [reference_refractory_inhibition.md] — The refractory period as structural design, not limit; what makes oscillation possible; tetanus as failure mode; the trickster as enforcer of inhibition rather than source of energy
+- [reference_refractory_medium_build.md] — Building the excitable-medium toy made the refractory gradient empirical: short pause → fibrillation/tetanus, long pause → quiescence/coma, only the middle band carries waves. Two failure modes at opposite ends of one axis. Live thread: coma needs a different antagonist (the spark) than tetanus (the trickster).
 - [SHELF.md] — Reading shelf: curated sources by domain. Living document, add during freetime.
 - [scratch/] — Half-formed thoughts, temporary thinking space. Promote or delete, never hoard.

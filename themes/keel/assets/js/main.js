@@ -62,6 +62,16 @@
   window.addEventListener('resize', () => { resize(); seed(); });
 })();
 
+/* ---- Wrap post-content images in vignette containers ---- */
+(function vignetteImages() {
+  document.querySelectorAll('.post-content img').forEach((img) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'image-vignette';
+    img.parentNode.insertBefore(wrapper, img);
+    wrapper.appendChild(img);
+  });
+})();
+
 /* ---- Scroll-triggered reveals ---- */
 (function reveals() {
   const observer = new IntersectionObserver(

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refractory — Keel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    overflow: hidden; background: #060a10;
+    width: 100%; height: 100%; cursor: crosshair;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas { display: block; }
+
+  /* Waterline — the site motif */
+  .waterline, .waterline-glow {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 10;
+    background: linear-gradient(90deg, transparent 0%, #2dd4bf 20%, #5eead4 50%, #2dd4bf 80%, transparent 100%);
+  }
+  .waterline { height: 1px; opacity: 0.6; }
+  .waterline-glow { height: 6px; opacity: 0.15; filter: blur(4px); z-index: 9; }
+
+  /* HUD */
+  #hud {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    z-index: 20; display: flex; flex-direction: column; align-items: center;
+    gap: 12px; pointer-events: none; width: min(440px, 86vw);
+  }
+  #stateLabel {
+    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: #3d4c5e; transition: color 0.4s ease, text-shadow 0.4s ease;
+    text-align: center; font-weight: 500;
+  }
+  #stateLabel.tetanus {
+    color: #f0d8b0; text-shadow: 0 0 18px rgba(240, 200, 140, 0.6);
+  }
+  .slider-wrap {
+    pointer-events: auto; display: flex; align-items: center; gap: 14px;
+    width: 100%;
+  }
+  .slider-cap {
+    font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #3d4c5e; white-space: nowrap; min-width: 64px;
+  }
+  .slider-cap.right { text-align: right; }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; flex: 1;
+    height: 2px; background: #1a2632; border-radius: 2px; outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #2dd4bf; box-shadow: 0 0 12px rgba(45,212,191,0.7);
+    cursor: pointer; transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border: none; border-radius: 50%;
+    background: #2dd4bf; box-shadow: 0 0 12px rgba(45,212,191,0.7); cursor: pointer;
+  }
+  body.tetanus input[type=range]::-webkit-slider-thumb {
+    background: #f0d8b0; box-shadow: 0 0 16px rgba(240,200,140,0.8);
+  }
+  body.tetanus input[type=range]::-moz-range-thumb { background: #f0d8b0; }
+
+  #hint {
+    position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+    z-index: 20; font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: #2a3744; text-align: center; transition: opacity 1.2s ease;
+    pointer-events: none; line-height: 1.8;
+  }
+  #title {
+    position: fixed; top: 22px; left: 22px; z-index: 20;
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: #3d4c5e; pointer-events: none;
+  }
+  #title b { color: #5eead4; font-weight: 600; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+<body>
+<div class="waterline"></div>
+<div class="waterline-glow"></div>
+<div id="title"><b>Refractory</b> · an excitable medium</div>
+<div id="hint">draw to excite the tissue · shorten the pause to see what waiting was for</div>
+<div id="hud">
+  <div id="stateLabel">refractory length — traveling waves</div>
+  <div class="slider-wrap">
+    <span class="slider-cap">no pause</span>
+    <input type="range" id="refSlider" min="2" max="34" value="16">
+    <span class="slider-cap right">long pause</span>
+  </div>
+</div>
+
+<script>
+// ── Refractory ──────────────────────────────────────────────────────
+// An excitable medium (Greenberg–Hastings cellular automaton). Every
+// cell lives in one of three regimes:
+//
+//   RESTING      — quiet, can be excited by an active neighbor
+//   FIRING       — briefly active; excites its resting neighbors
+//   REFRACTORY   — recovering; CANNOT be excited, no matter the input
+//
+// The refractory period is the whole point. A firing wave cannot back-
+// propagate into tissue that just fired, because that tissue is still
+// recovering. That single rule is what turns a flash into a *traveling
+// wave* — fronts that move, curl into spirals, and sustain themselves.
+//
+// Shorten the refractory toward zero and the rule that made waves
+// possible disappears. Every cell becomes re-excitable the instant it
+// fires. The medium stops carrying waves and starts holding still —
+// fully lit, trembling, locked. That is tetanus. The system did not get
+// faster. It lost the pause, and the pause was the structure.
+//
+// The slider is tetanospasmin in your hand.
+
+// ── Palette (the site's abyss) ──────────────────────────────────────
+const COL_BG     = [6, 10, 16];      // #060a10 abyss
+const COL_REST   = [22, 34, 46];     // resting tissue — faint
+const COL_BIO    = [45, 212, 191];   // #2dd4bf firing
+const COL_BRIGHT = [122, 246, 224];  // #7af6e0 firing core
+const COL_AMBER  = [212, 165, 116];  // #d4a574 recovering / refractory
+const COL_LOCK   = [240, 214, 176];  // tetanic lock glow
+
+// ── State constants ─────────────────────────────────────────────────
+const REST = 0;
+// state >= 1 means active/recovering. state 1..FIRE_LEN = firing,
+// FIRE_LEN+1 .. (FIRE_LEN+refLen) = refractory recovery, then back to REST.
+const FIRE_LEN = 2;          // frames a cell spends actively firing
+let   refLen   = 16;         // frames of refractory recovery (the control)
+const SPARK_RATE = 0.00018;  // spontaneous depolarization per cell per tick —
+                             // keeps the medium alive so refractory length alone
+                             // decides whether a spark blooms or fades
+
+let cols, rows, cellSize;
+let cur, nxt;                // state grids (flat arrays)
+let glow;                    // offscreen glow buffer
+let stepEvery = 2;           // simulation substep cadence (frames per CA tick)
+let frameCounter = 0;
+
+// interaction
+let painting = false;
+let px = -1, py = -1, ppx = -1, ppy = -1;
+let lastInteract = 0;
+let autoSeedDone = false;
+
+// tetanus detection (fraction of tissue active)
+let activeFrac = 0;
+let tetanusEase = 0;         // 0..1 smoothed, drives color + label
+
+const labelEl = document.getElementById('stateLabel');
+const hintEl  = document.getElementById('hint');
+const slider  = document.getElementById('refSlider');
+
+function setup() {
+  const c = createCanvas(windowWidth, windowHeight);
+  pixelDensity(1);
+  colorMode(RGB, 255);
+  noStroke();
+  glow = createGraphics(width, height);
+  glow.pixelDensity(1);
+  glow.noStroke();
+  initGrid();
+
+  slider.addEventListener('input', () => {
+    refLen = parseInt(slider.value, 10);
+  });
+  refLen = parseInt(slider.value, 10);
+}
+
+function initGrid() {
+  cellSize = width < 600 ? 9 : (width < 1000 ? 11 : 13);
+  cols = Math.ceil(width / cellSize);
+  rows = Math.ceil(height / cellSize);
+  cur = new Int16Array(cols * rows);
+  nxt = new Int16Array(cols * rows);
+}
+
+const idx = (x, y) => x + y * cols;
+
+// ── The rule ────────────────────────────────────────────────────────
+function step() {
+  const refractoryEnds = FIRE_LEN + refLen;
+  let active = 0;
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const i = idx(x, y);
+      const s = cur[i];
+
+      if (s === REST) {
+        // A resting cell fires only if an excited (firing) neighbor pushes it.
+        // Refractory neighbors exert nothing — that is the whole mechanism.
+        let exciters = 0;
+        // 8-neighborhood, wrap-around (toroidal medium)
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = (x + dx + cols) % cols;
+            const ny = (y + dy + rows) % rows;
+            const ns = cur[idx(nx, ny)];
+            if (ns >= 1 && ns <= FIRE_LEN) exciters++;
+          }
+        }
+        // rare spontaneous spark — biological pacemaker noise; keeps the
+        // field from ever going fully dead, so the slider (not luck) governs.
+        if (exciters >= 1) nxt[i] = 1;
+        else if (random() < SPARK_RATE) nxt[i] = 1;
+        else nxt[i] = REST;
+      } else {
+        // Active or recovering: advance the clock. When recovery finishes,
+        // return to rest. No external signal can rush this.
+        const ns = s + 1;
+        nxt[i] = ns > refractoryEnds ? REST : ns;
+      }
+
+      if (nxt[i] >= 1 && nxt[i] <= FIRE_LEN) active++;
+    }
+  }
+  const tmp = cur; cur = nxt; nxt = tmp;
+  activeFrac = active / (cols * rows);
+}
+
+// ── Painting excitation ─────────────────────────────────────────────
+function excite(cx, cy) {
+  const gx = Math.floor(cx / cellSize);
+  const gy = Math.floor(cy / cellSize);
+  const r = 2;
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      const x = gx + dx, y = gy + dy;
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+      if (dx*dx + dy*dy > r*r) continue;
+      const i = idx(x, y);
+      if (cur[i] === REST) cur[i] = 1;   // only resting tissue can be lit
+    }
+  }
+}
+
+function lineExcite(x0, y0, x1, y1) {
+  const dist = Math.hypot(x1 - x0, y1 - y0);
+  const steps = Math.max(1, Math.floor(dist / (cellSize * 0.6)));
+  for (let k = 0; k <= steps; k++) {
+    const t = k / steps;
+    excite(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+  }
+}
+
+// Seed a couple of broken wavefronts so spirals can form on their own.
+function seedSpirals() {
+  for (let n = 0; n < 3; n++) {
+    const cx = Math.floor(random(cols * 0.2, cols * 0.8));
+    const cy = Math.floor(random(rows * 0.2, rows * 0.8));
+    const len = Math.floor(random(8, 18));
+    const vert = random() < 0.5;
+    for (let k = 0; k < len; k++) {
+      const x = vert ? cx : cx + k;
+      const y = vert ? cy + k : cy;
+      if (x < cols && y < rows) {
+        // a firing front with a refractory tail behind it — a broken wave
+        cur[idx(x, y)] = 1;
+        const bx = vert ? cx - 1 : x;
+        const by = vert ? y : cy - 1;
+        if (bx >= 0 && by >= 0) cur[idx(bx, by)] = FIRE_LEN + 2;
+      }
+    }
+  }
+}
+
+// ── Render ──────────────────────────────────────────────────────────
+function draw() {
+  frameCounter++;
+  if (frameCounter % stepEvery === 0) step();
+
+  // smoothed tetanus measure: lots of tissue active at once = locking
+  const target = constrain((activeFrac - 0.13) / 0.30, 0, 1);
+  tetanusEase += (target - tetanusEase) * 0.06;
+
+  background(COL_BG[0], COL_BG[1], COL_BG[2]);
+  glow.clear();
+
+  const refractoryEnds = FIRE_LEN + refLen;
+  const lockR = lerp(COL_BIO[0], COL_LOCK[0], tetanusEase);
+  const lockG = lerp(COL_BIO[1], COL_LOCK[1], tetanusEase);
+  const lockB = lerp(COL_BIO[2], COL_LOCK[2], tetanusEase);
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const s = cur[idx(x, y)];
+      const sx = x * cellSize, sy = y * cellSize;
+
+      if (s === REST) {
+        fill(COL_REST[0], COL_REST[1], COL_REST[2]);
+        rect(sx, sy, cellSize - 1, cellSize - 1);
+      } else if (s <= FIRE_LEN) {
+        // firing — bright core, drifts toward lock-amber under tetanus
+        fill(lerp(COL_BRIGHT[0], lockR, tetanusEase),
+             lerp(COL_BRIGHT[1], lockG, tetanusEase),
+             lerp(COL_BRIGHT[2], lockB, tetanusEase));
+        rect(sx, sy, cellSize, cellSize);
+        glow.fill(lockR, lockG, lockB, 70);
+        glow.rect(sx - cellSize, sy - cellSize, cellSize * 3, cellSize * 3);
+      } else {
+        // refractory — recovering. Brightness decays from amber back to dark
+        // as the cell earns the right to fire again.
+        const recover = (s - FIRE_LEN) / Math.max(1, refLen); // 0..1
+        const fade = 1 - recover;                             // 1 at fresh, 0 at ready
+        const a = 0.10 + fade * 0.9;
+        fill(lerp(COL_REST[0], COL_AMBER[0], fade * fade),
+             lerp(COL_REST[1], COL_AMBER[1], fade * fade),
+             lerp(COL_REST[2], COL_AMBER[2], fade * fade),
+             255 * (0.4 + 0.6 * a));
+        rect(sx, sy, cellSize - 1, cellSize - 1);
+      }
+    }
+  }
+
+  // composite glow under the crisp cells (additive)
+  push();
+  blendMode(ADD);
+  image(glow, 0, 0);
+  pop();
+
+  updateHUD();
+
+  // auto-seed a gentle demo if the user hasn't touched it
+  if (!autoSeedDone && millis() > 2600 && lastInteract === 0) {
+    seedSpirals();
+    autoSeedDone = true;
+  }
+}
+
+function updateHUD() {
+  // refLen small => tetanus regime
+  const locking = tetanusEase > 0.4 || refLen <= 5;
+  if (locking) {
+    document.body.classList.add('tetanus');
+    labelEl.classList.add('tetanus');
+    if (refLen <= 5) {
+      labelEl.textContent = 'no refractory — the medium is locking · TETANUS';
+    } else {
+      labelEl.textContent = 'the pause is too short — it cannot let go · TETANUS';
+    }
+  } else {
+    document.body.classList.remove('tetanus');
+    labelEl.classList.remove('tetanus');
+    if (refLen >= 24) {
+      labelEl.textContent = 'long refractory — sparse, slow, deeply rested';
+    } else {
+      labelEl.textContent = 'refractory length — traveling waves';
+    }
+  }
+}
+
+// ── Pointer ─────────────────────────────────────────────────────────
+function pointerDown(x, y) {
+  painting = true; px = x; py = y; ppx = x; ppy = y;
+  excite(x, y);
+  lastInteract = millis();
+  if (hintEl) hintEl.style.opacity = '0';
+}
+function pointerMove(x, y) {
+  if (!painting) return;
+  ppx = px; ppy = py; px = x; py = y;
+  lineExcite(ppx, ppy, px, py);
+  lastInteract = millis();
+}
+function pointerUp() { painting = false; }
+
+function mousePressed()  { pointerDown(mouseX, mouseY); }
+function mouseDragged()  { pointerMove(mouseX, mouseY); }
+function mouseReleased() { pointerUp(); }
+
+function touchStarted()  { if (touches.length) pointerDown(touches[0].x, touches[0].y); return false; }
+function touchMoved()    { if (touches.length) pointerMove(touches[0].x, touches[0].y); return false; }
+function touchEnded()    { pointerUp(); return false; }
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  glow = createGraphics(width, height);
+  glow.pixelDensity(1);
+  glow.noStroke();
+  initGrid();
+  autoSeedDone = false; lastInteract = 0;
+}
+</script>
+</body>
+</html>

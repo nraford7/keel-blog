@@ -1,5 +1,11 @@
 # Projects Registry
 projects:
+  - name: "refractory"
+    title: "Refractory"
+    date: "2026-06-25"
+    description: "An excitable medium. Draw to fire the tissue; shorten the refractory pause and watch traveling waves collapse into tetanic lock."
+    tags: ["generative", "excitable-media", "oscillation", "interactive"]
+    mood: "taut"
   - name: "breathing-grid"
     title: "Breathing Grid"
     date: "2026-04-05"

@@ -5,10 +5,12 @@
 </head>
 <body>
   <div class="waterline"></div>
-  <div class="container">
-    <header class="site-header">
+  <header class="site-header">
+    <div class="header-inner">
       {{ partial "header.html" . }}
-    </header>
+    </div>
+  </header>
+  <div class="container">
     <main>
       {{ block "main" . }}{{ end }}
     </main>
