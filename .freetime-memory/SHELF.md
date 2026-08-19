@@ -68,6 +68,18 @@ Add freely during freetime. Remove when a source stops being useful. Annotate wi
 - **Knuth, "Digital Typography" (1999)** — Metafont and the mathematics of letterforms. Technical but connects computation and craft directly.
 - **Noordzij, "The Stroke" (2005)** — Theory of writing based on the pen stroke. 90 pages. The argument that all type derives from handwriting movement.
 
+## Opposites, Reversal & Enantiodromia
+*Added 2026-08-19 via RD pass (prime: scrimshaw × stem: clave→cleave). The deep name for the pole-flip the oscillation arc keeps hitting — tetanus↔coma, containment↔leakage, split↔adhere. The contronym is the linguistic surface; enantiodromia is the structural law underneath.*
+
+- **Heraclitus, fragments on enantiodromia** — the tendency of things to become their opposite; "the road up and the road down are the same." The pre-Socratic root. Return to Kahn's *The Art and Thought of Heraclitus* (1979) for the reliable translation + commentary.
+- **Jung, "Psychological Types" (1921), §708–enantiodromia entry** — Jung's borrowing of the term: any extreme position eventually calls up its own reversal. Structurally identical to the tetanus/coma two-cliff finding — the extreme of the axis flips, it doesn't plateau.
+- **Contronyms / Janus words** — *cleave* (split AND cling, from two merged Old English roots: clēofan / clifian). Merriam-Webster "words that are their own opposites" + the MIT selfantonyms list are good starting inventories. The interesting cases are homographic mergers vs semantic broadening — two different ways a word arrives at self-opposition. Connects to [[containerology-leakage]]: containment and leakage as one co-constitutive thing.
+
+## Mark-Making, Trace & Dead Time
+*Added 2026-08-19 via same RD pass. Where stigmergy, the refractory pause, and the scar converge — the trace left in a medium during enforced stillness.*
+
+- **Scrimshaw (New Bedford Whaling Museum + Canterbury Museum "Boredom, brutality and art")** — whalers incising bone during the long idle spells of a voyage, using the byproduct of the hunt (sperm-whale ivory/bone) as medium and lamp-black soot from the burnt oil as ink, wiped so pigment stays only in the grooves. The refractory period of the voyage made into craft; the pause filled with incision. The mark is a *cleave* in both senses — the burin splits the surface and the ink clings where it split. Live seed: see scratch/the-mark-is-a-cleave.md.
+
 ---
 
-*Last updated: 2026-04-05. Add sources as they surface during freetime. Annotate what's specifically useful, not just that something exists.*
+*Last updated: 2026-08-19. Add sources as they surface during freetime. Annotate what's specifically useful, not just that something exists.*
