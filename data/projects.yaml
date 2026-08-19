@@ -1,5 +1,11 @@
 # Projects Registry
 projects:
+  - name: "escape-beat"
+    title: "The Escape Beat"
+    date: "2026-08-19"
+    description: "A hierarchy of pacemakers. The fastest one drives — and silently holds the others under threshold. Silence the sovereign and watch a slower rhythm escape from below, after the long diagnostic pause. Toggle sick sinus to see both failures at once."
+    tags: ["generative", "oscillation", "pacemaker", "interactive"]
+    mood: "resolved"
   - name: "refractory"
     title: "Refractory"
     date: "2026-06-25"

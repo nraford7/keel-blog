@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Escape Beat — Keel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    overflow: hidden; background: #060a10;
+    width: 100%; height: 100%; cursor: default;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas { display: block; }
+
+  /* Waterline — the site motif */
+  .waterline, .waterline-glow {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 10; pointer-events: none;
+    background: linear-gradient(90deg, transparent 0%, #2dd4bf 20%, #5eead4 50%, #2dd4bf 80%, transparent 100%);
+  }
+  .waterline { height: 1px; opacity: 0.5; }
+  .waterline-glow { height: 6px; opacity: 0.12; filter: blur(4px); z-index: 9; }
+
+  /* Title */
+  #title {
+    position: fixed; top: 22px; left: 26px; z-index: 20; pointer-events: none;
+  }
+  #title h1 {
+    font-size: 12px; letter-spacing: 0.34em; text-transform: uppercase;
+    color: #cdd9e5; font-weight: 600;
+  }
+  #title p {
+    font-size: 10px; letter-spacing: 0.14em; color: #46586b; margin-top: 6px;
+    max-width: 300px; line-height: 1.6;
+  }
+
+  /* HUD */
+  #hud {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 12px;
+    width: min(560px, 90vw);
+  }
+  #readout {
+    display: flex; align-items: baseline; gap: 14px; font-variant-numeric: tabular-nums;
+  }
+  #driver {
+    font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600;
+    color: #2dd4bf; transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+  #bpm { font-size: 11px; letter-spacing: 0.18em; color: #46586b; }
+  #controls { display: flex; gap: 10px; }
+  button {
+    background: transparent; border: 1px solid #1c2a38; color: #6c7f92;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+    padding: 7px 14px; border-radius: 2px; cursor: pointer;
+    transition: all 0.25s ease; font-family: inherit;
+  }
+  button:hover { border-color: #2dd4bf; color: #cdd9e5; }
+  button.active {
+    border-color: #f0b060; color: #f0d8b0; box-shadow: 0 0 14px rgba(240,176,96,0.25);
+  }
+  #hint {
+    font-size: 9px; letter-spacing: 0.16em; color: #35485a; text-align: center;
+    line-height: 1.7; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="waterline"></div>
+<div class="waterline-glow"></div>
+<div id="title">
+  <h1>The Escape Beat</h1>
+  <p>Every beat from above is also an act of suppression. Silence the sovereign, and a slower rhythm rises from below.</p>
+</div>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div id="readout"><span id="driver">—</span><span id="bpm">—</span></div>
+  <div id="controls">
+    <button id="btnReset">revive all</button>
+    <button id="btnSick">sick sinus</button>
+  </div>
+  <div id="hint">Click a pacemaker to silence it · click again to revive</div>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+let W, H, DPR;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  layout();
+}
+window.addEventListener('resize', resize);
+
+// ---- Pacemaker hierarchy -----------------------------------------------
+// period ms  ~  physiological intrinsic rates (SA ~70, AV ~48, Vent ~33 bpm)
+const nodes = [
+  { key:'SINOATRIAL',  sub:'~70/min', period: 850,  color:'#2dd4bf', amp: 1.00, spikeLen: 9  },
+  { key:'AV JUNCTION', sub:'~48/min', period: 1250, color:'#f0d8b0', amp: 0.85, spikeLen: 10 },
+  { key:'VENTRICULAR', sub:'~33/min', period: 1800, color:'#e07a5f', amp: 0.72, spikeLen: 18 },
+];
+nodes.forEach(n => {
+  n.phase = Math.random() * 0.4;   // phase-4 depolarization, 0->1
+  n.refractory = 0;                // ms remaining unexcitable
+  n.suppression = 0;               // accumulated overdrive suppression (0..1)
+  n.dead = false;
+  n.flash = 0;                     // fire flash, decays
+  n.jitter = 0;
+});
+
+const SUPPRESS_GAIN = 0.55;   // how far a higher fire drives a lower node below baseline
+const SUPPRESS_MAX  = 0.9;
+const SUPPRESS_DECAY = 0.00025; // per ms, recovery of held-down potential when freed
+const REFRAC = 260;           // ms unexcitable after firing
+
+let sick = false;
+let lastOrigin = null;     // index of node that drove the last beat
+let beatTimes = [];        // recent conducted-beat timestamps for bpm
+let travelers = [];        // conduction pulses animating toward the strip
+
+// ---- ECG strip ----------------------------------------------------------
+const QRS = [0, 0.08, 0.04, -0.18, 1.0, -0.34, 0.06, 0.0, -0.02, 0]; // shape lookup
+let strip = [];      // {v, c}
+let stripLen = 0;
+let spike = null;    // {i, len, node}
+
+function layout() {
+  const cx = W * 0.42;
+  const top = H * 0.16, gap = H * 0.155;
+  const r = Math.max(26, Math.min(W, H) * 0.058);
+  nodes.forEach((n, i) => { n.x = cx; n.y = top + gap * i; n.r = r; });
+  // strip geometry
+  strip._x = W * 0.06;
+  strip._w = W * 0.88;
+  strip._midY = H * 0.80;
+  strip._amp = Math.min(H * 0.11, 120);
+  stripLen = Math.floor(strip._w);
+  if (strip.length === 0) for (let i = 0; i < stripLen; i++) strip.push({ v: 0, c: null });
+}
+
+// ---- Firing -------------------------------------------------------------
+function fire(idx, tNow) {
+  const n = nodes[idx];
+  n.phase = 0;
+  n.refractory = REFRAC;
+  n.suppression = 0;         // it just depolarized on its own — no longer held down
+  n.flash = 1;
+
+  // Overdrive suppression: every live node BELOW is reset and driven under threshold.
+  for (let j = idx + 1; j < nodes.length; j++) {
+    const low = nodes[j];
+    if (low.dead || low.refractory > 0) continue;
+    const gain = sick ? SUPPRESS_GAIN * 0.4 : SUPPRESS_GAIN; // weak sovereign suppresses poorly
+    low.suppression = Math.min(SUPPRESS_MAX, low.suppression + gain);
+    low.phase = -low.suppression; // held below baseline -> long climb once freed
+  }
+
+  // Conducted beat.
+  lastOrigin = idx;
+  beatTimes.push(tNow);
+  if (beatTimes.length > 6) beatTimes.shift();
+  spike = { i: 0, len: n.spikeLen, node: n };
+  travelers.push({ from: idx, y: n.y, origin: n, done: false });
+}
+
+// ---- Update -------------------------------------------------------------
+let last = performance.now();
+function update(tNow) {
+  let dt = tNow - last; last = tNow;
+  if (dt > 60) dt = 60; // guard against tab-switch jumps
+
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    n.flash *= Math.pow(0.9, dt / 16);
+    if (n.dead) continue;
+    if (n.refractory > 0) { n.refractory -= dt; continue; }
+    n.suppression = Math.max(0, n.suppression - SUPPRESS_DECAY * dt);
+
+    let period = n.period;
+    if (sick && i === 0) {
+      // sick sinus: erratic rate + intermittent long pauses (failure to fire)
+      n.jitter += dt;
+      period = n.period * (1 + 0.5 * Math.sin(n.jitter * 0.0007));
+      if (n.phase > 0.98 && Math.random() < 0.28) {
+        // dropped beat — a sinus pause; skip this depolarization
+        n.phase = 0.2; n.refractory = 120;
+        continue;
+      }
+    }
+    n.phase += dt / period;
+    if (n.phase >= 1) fire(i, tNow);
+  }
+
+  // travelers move down the conduction axis toward the strip
+  const targetY = strip._midY;
+  for (const t of travelers) {
+    t.y += dt * 0.9;
+    if (t.y >= targetY) t.done = true;
+  }
+  travelers = travelers.filter(t => !t.done);
+
+  // advance ECG strip one sample
+  let v = 0, c = null;
+  if (spike) {
+    const p = spike.i / spike.len;
+    const fi = p * (QRS.length - 1);
+    const a = Math.floor(fi), b = Math.min(QRS.length - 1, a + 1), f = fi - a;
+    v = (QRS[a] * (1 - f) + QRS[b] * f) * spike.node.amp;
+    c = spike.node.color;
+    spike.i++;
+    if (spike.i >= spike.len) spike = null;
+  }
+  strip.push({ v, c });
+  while (strip.length > stripLen) strip.shift();
+}
+
+// ---- Draw ---------------------------------------------------------------
+function nodeState(i) {
+  const n = nodes[i];
+  if (n.dead) return 'SILENCED';
+  // topmost living node
+  let topLive = nodes.findIndex(x => !x.dead);
+  if (i === lastOrigin) return (i === topLive) ? 'DRIVING' : 'ESCAPED';
+  if (i < lastOrigin) return 'WAKING';       // revived above current driver, climbing to recapture
+  return n.suppression > 0.05 ? 'SUPPRESSED' : 'LATENT';
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // conduction axis
+  ctx.strokeStyle = 'rgba(60,80,100,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(nodes[0].x, nodes[0].y);
+  ctx.lineTo(nodes[nodes.length - 1].x, strip._midY);
+  ctx.stroke();
+
+  // travelers (conduction pulses)
+  for (const t of travelers) {
+    ctx.beginPath();
+    ctx.fillStyle = t.origin.color;
+    ctx.globalAlpha = 0.8;
+    ctx.arc(nodes[0].x, t.y, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // nodes
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    const st = nodeState(i);
+    const ch = Math.max(0, Math.min(1, n.phase)); // charge shown
+    const dim = n.dead || st === 'SUPPRESSED';
+
+    // outer ring
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.strokeStyle = n.dead ? 'rgba(70,88,107,0.35)' : 'rgba(90,120,145,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // held-below-baseline indicator (suppression) — faint under-arc
+    if (!n.dead && n.suppression > 0.02 && n.phase < 0) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + 6, Math.PI * 0.5 - n.suppression * 1.4, Math.PI * 0.5 + n.suppression * 1.4);
+      ctx.strokeStyle = 'rgba(224,122,95,0.35)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // charge arc (phase-4 climb), from top clockwise
+    if (!n.dead && ch > 0) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, -Math.PI / 2, -Math.PI / 2 + ch * Math.PI * 2);
+      ctx.strokeStyle = n.color;
+      ctx.globalAlpha = dim ? 0.35 : 0.9;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // inner fill / flash
+    const glow = Math.max(n.flash, dim ? 0.04 : ch * 0.22);
+    const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+    const col = hexToRgb(n.dead ? '#46586b' : n.color);
+    g.addColorStop(0, `rgba(${col.r},${col.g},${col.b},${0.15 + glow * 0.85})`);
+    g.addColorStop(1, `rgba(${col.r},${col.g},${col.b},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r - 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // dead X
+    if (n.dead) {
+      ctx.strokeStyle = 'rgba(120,140,158,0.55)';
+      ctx.lineWidth = 1.5;
+      const d = n.r * 0.4;
+      ctx.beginPath();
+      ctx.moveTo(n.x - d, n.y - d); ctx.lineTo(n.x + d, n.y + d);
+      ctx.moveTo(n.x + d, n.y - d); ctx.lineTo(n.x - d, n.y + d);
+      ctx.stroke();
+    }
+
+    // labels (to the right of node)
+    const lx = n.x + n.r + 22;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = n.dead ? '#46586b' : '#aebccb';
+    ctx.font = '600 11px -apple-system, sans-serif';
+    ctx.fillText(spaced(n.key), lx, n.y - 5);
+    ctx.fillStyle = '#46586b';
+    ctx.font = '500 9px -apple-system, sans-serif';
+    ctx.fillText(spaced(n.sub), lx, n.y + 10);
+    // state tag
+    ctx.fillStyle = stateColor(st);
+    ctx.font = '600 9px -apple-system, sans-serif';
+    ctx.fillText(spaced(st), lx, n.y + 25);
+  }
+
+  // ECG strip baseline
+  ctx.strokeStyle = 'rgba(60,80,100,0.16)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(strip._x, strip._midY);
+  ctx.lineTo(strip._x + strip._w, strip._midY);
+  ctx.stroke();
+
+  // ECG trace
+  ctx.lineWidth = 1.6;
+  ctx.lineJoin = 'round';
+  let prevC = null;
+  ctx.beginPath();
+  for (let i = 0; i < strip.length; i++) {
+    const s = strip[i];
+    const x = strip._x + i;
+    const y = strip._midY - s.v * strip._amp;
+    const col = s.c || 'rgba(90,120,145,0.5)';
+    if (col !== prevC) {
+      if (prevC !== null) ctx.stroke();
+      ctx.strokeStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      prevC = col;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+
+  updateHud();
+}
+
+function stateColor(st) {
+  switch (st) {
+    case 'DRIVING': return '#2dd4bf';
+    case 'ESCAPED': return '#f0d8b0';
+    case 'SUPPRESSED': return '#5a6f82';
+    case 'SILENCED': return '#46586b';
+    case 'WAKING': return '#9fd8cf';
+    default: return '#6c7f92';
+  }
+}
+
+// ---- HUD ----------------------------------------------------------------
+const elDriver = document.getElementById('driver');
+const elBpm = document.getElementById('bpm');
+function updateHud() {
+  if (lastOrigin === null || nodes[lastOrigin].dead) {
+    elDriver.textContent = 'ASYSTOLE'; elDriver.style.color = '#e07a5f';
+    elBpm.textContent = 'no pacemaker';
+    return;
+  }
+  const n = nodes[lastOrigin];
+  const topLive = nodes.findIndex(x => !x.dead);
+  const escaped = lastOrigin !== topLive;
+  elDriver.textContent = (escaped ? 'ESCAPE · ' : 'DRIVER · ') + n.key;
+  elDriver.style.color = escaped ? '#f0d8b0' : n.color;
+  if (beatTimes.length >= 2) {
+    const iv = (beatTimes[beatTimes.length - 1] - beatTimes[0]) / (beatTimes.length - 1);
+    elBpm.textContent = Math.round(60000 / iv) + ' / min';
+  }
+}
+
+// ---- helpers ------------------------------------------------------------
+function hexToRgb(h) {
+  const n = parseInt(h.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function spaced(s) { return s.split('').join(' '); } // hairline tracking
+
+// ---- interaction --------------------------------------------------------
+cv.addEventListener('pointerdown', e => {
+  const mx = e.clientX, my = e.clientY;
+  for (const n of nodes) {
+    if (Math.hypot(mx - n.x, my - n.y) <= n.r + 8) {
+      n.dead = !n.dead;
+      if (n.dead) { n.flash = 0; }
+      else { n.phase = 0; n.suppression = 0; n.refractory = 0; }
+      // recompute driver if the current one died
+      if (nodes[lastOrigin] && nodes[lastOrigin].dead) {
+        beatTimes = [];
+      }
+      break;
+    }
+  }
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  nodes.forEach(n => { n.dead = false; n.phase = Math.random() * 0.3; n.suppression = 0; n.refractory = 0; });
+  beatTimes = [];
+});
+const btnSick = document.getElementById('btnSick');
+btnSick.addEventListener('click', () => {
+  sick = !sick;
+  btnSick.classList.toggle('active', sick);
+  btnSick.textContent = sick ? 'sick sinus ·on' : 'sick sinus';
+});
+
+// ---- loop ---------------------------------------------------------------
+resize();
+function frame(t) { update(t); draw(); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
